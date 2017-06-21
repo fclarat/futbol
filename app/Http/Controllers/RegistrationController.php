@@ -6,9 +6,14 @@ use App\User;
 
 class RegistrationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('guest');
+    }
+
     public function create()
     {
-        return view('sessions.create');
+        return view('registration.create');
     }
 
     public function store()
@@ -16,12 +21,16 @@ class RegistrationController extends Controller
         // Validate the form
         $this->validate(request(), [
             'name' => 'required',
-            'email' => 'required|email',
-            'password' => 'required'
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed'
         ]);
 
         // Creae and save the user
-        $user = User::create(request(['name', 'email', 'password']));
+        $user = User::create([
+            'name' => request('name'),
+            'email' => request('email'),
+            'password' => bcrypt(request('password')),
+        ]);
 
         // Sign them in
         auth()->login($user);
